@@ -1,0 +1,39 @@
+{
+	admin off
+	auto_https off
+}
+
+:{$PORT:8080} {
+	# Railway's healthcheck carries no credentials, and every PaddleX route is
+	# an inference endpoint, so the check cannot be pointed at one without
+	# opening a hole. Caddy answers this path itself; the entrypoint guarantees
+	# the inference server is alive by taking the container down if it exits.
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	handle {
+		basic_auth {
+			{$PADDLEOCR_USERNAME} {$PADDLEOCR_PASSWORD_HASH}
+		}
+
+		# OCR requests carry images and PDFs, and responses inline results as
+		# base64, so both directions can be large. The default 10 MB body cap
+		# would reject ordinary scans.
+		request_body {
+			max_size {$PADDLEOCR_MAX_BODY:32MB}
+		}
+
+		reverse_proxy 127.0.0.1:{$PADDLEOCR_INTERNAL_PORT:8081} {
+			# Inference is slow on CPU; do not cut a request off mid-OCR.
+			transport http {
+				read_timeout {$PADDLEOCR_TIMEOUT:300s}
+			}
+		}
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
