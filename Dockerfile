@@ -36,6 +36,20 @@ ENV PADDLE_PDX_CACHE_HOME=/opt/paddlex \
     PADDLEOCR_INTERNAL_PORT=8081 \
     PORT=8080
 
+# Disable oneDNN.
+#
+# PaddleX enables it by default, and on real x86 hardware PaddlePaddle 3.3.1
+# then fails every OCR request inside its new PIR executor:
+#
+#   NotImplementedError: (Unimplemented) ConvertPirAttribute2RuntimeAttribute
+#   not support [pir::ArrayAttribute<pir::DoubleAttribute>]
+#   (at .../new_executor/instruction/onednn/onednn_instruction.cc:116)
+#
+# This never reproduces in a local `--platform linux/amd64` rehearsal on Apple
+# Silicon, because the emulated CPU does not take the oneDNN path at all — the
+# bug only appears once the service runs on genuine hardware.
+ENV PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT=False
+
 # Bake the pipeline's weights into the image.
 #
 # PaddleX builds the pipeline when the SERVER STARTS, not lazily on the first
