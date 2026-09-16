@@ -112,3 +112,5 @@ docker run --rm --platform linux/amd64 -v "$PWD":/w -w /w python:3.12-slim \
 
 PaddleOCR is [Apache-2.0](https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE). Caddy is
 Apache-2.0. The glue in this repository is MIT.
+
+> Card icon: `icon.png` is upstream's `docs/version3.x/logo.jpg` padded to a 512x512 square, re-hosted here so the marketplace URL stays stable.
